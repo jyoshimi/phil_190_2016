@@ -165,7 +165,6 @@ yang.init_plus = function() { //object related initialization
     yang.text_.motionText = "No Message";
     yang.text_.interactiveText = "";
     yang.text_.testFeedBack = "Everything is FINE.";
-    yang.text_.GoalText = "No Goal";
     //test related
     yang.test_.ini = 0;
     yang.test_.test_ongoing = false;
@@ -246,18 +245,16 @@ yang.getStatus = function() {
             "secondary resources = " + yang.biomachine_.metaresources_secondary + "\n" +
             "emptyness = " + yang.mindmachine_.emptyness + "\n" +
             "inspiration \t= " + yang.mindmachine_.inspiration + "\n" +
-            "randomness = " + yang.chaosmachine_.randomness+ "\n" +
-            yang.text_.GoalText;
+            "randomness = " + yang.chaosmachine_.randomness;
     } else {
         yang.text_.stateText =
             yang.text_.testFeedBack + "\n" +
             "Satisfy of Life\t" + yang.ultility_sum_.ulti.getBar(undefined, undefined, undefined, 5) + "\n" +
             "Pleasure\t\t"  + yang.ultility_sum_.pleasure.getBar(undefined, undefined, undefined, 5) + "\n" +
             "Pain\t\t\t" + yang.ultility_sum_.pain.getBar(undefined, undefined, undefined, 5) + "\n" +
-            yang["mental_task_node"].description + " " +
+            yang["mental_task_node"].description + "\n" +
             yang["speed_node"].description + " " +
-            yang["acceleration_node"].description + "\n" +
-            yang.text_.GoalText;
+            yang["acceleration_node"].description;
     }
     return yang.text_.stateText;
 };
@@ -283,7 +280,12 @@ yang.collisionCheck = function() {
         if (overlappingObjects.length != 0) {
             //new encounter
             yang.memory_.colliding_obj = overlappingObjects[0];
-            yang.collision_events(yang.memory_.colliding_obj);//fire events
+            //TO DO
+            if ((yang.memory_.colliding_obj instanceof Entity) 
+                && yang.memory_.colliding_obj.isEdible == false) {
+                yang.addMemory("Bumped into " + yang.memory_.colliding_obj.name);
+            }
+            yang.collision(yang.memory_.colliding_obj);//fire events
         }
     }
 }
@@ -377,13 +379,9 @@ yang.update = function() {
  * @memberOf yang
  */
 yang.pre_update = function() { // a reoccouring event...
-    //sort food, renew target
+    //sort food
     yang.memory_.uneaten_food.sort(yang.fun_.sort_by_shorter_distance);
-    if (yang.memory_.uneaten_food.length > 0) {
-        yang.node_.id_prime_focus.berry_game_obj_renew();
-    }
     //update text
-    yang.text_.GoalText = yang.goal_.toString();
     yang.text_.rotationText = "Rotation= " + Math.round(yang.body.rotation) +
         " Vs Angle(degree)= " + Math.round(yang.body.angle / Math.PI * 180);
     yang.text_.motionText = "Speed= " + yang.body.speed;
@@ -587,11 +585,12 @@ yang.fun_.generate_BGM_path = function () {
 }
 yang.BGM = yang.fun_.generate_BGM_path();//must declare befor load
 /**
- * renamed yang.collision
+ * collision
  * @param {Object}
  * @memberOf yang
+ * @Override
  */
-yang.collision_events = function(object) {//collision
+yang.collision = function(object) {//collision
     for (var brakeloop = 0; brakeloop < 2; brakeloop++) {    
         yang.node_.brake.brake();
     }
@@ -605,11 +604,7 @@ yang.collision_events = function(object) {//collision
     //speak
     if (yang.text_.interactiveText != "")
     {
-        if (!(object instanceof Bot)) {
-            yang.speak(yang, yang.text_.interactiveText);
-        } else {
-            yang.speak(object, yang.text_.interactiveText);
-        }   
+        yang.speak(object, yang.text_.interactiveText);
     }
 };
 /**
@@ -646,14 +641,6 @@ yang.findFood = function(radius = 200, edibilityFunction = yang.fun_.edible) {
  * @memberOf yang.fun_
  */
 yang.fun_.makeProductions = function() {
-    yang.production_.goal_production.push(
-        new Production(//example
-                yang.def_node.name,
-                yang.def_node.priority,
-                yang.def_node.condition,
-                yang.def_node.action
-        )
-    );
     yang.production_.inter_action.push(
         new Production(
                 yang.node_.feast_upon.name,
@@ -1228,9 +1215,9 @@ yang.node_.superego_drain_focus.always_fun = function() { //control sensitive
         yang.node_.id_secondary_focus.switch_to_this_node();
     } else {
         //increase pleasure
-        yang.ultility_sum_.pleasure.add(yang.biomachine_.metaresources_secondary * yang.ultility_sum_.translator);
+        // yang.ultility_sum_.pleasure.add(yang.biomachine_.metaresources_secondary * yang.ultility_sum_.translator);
         //also increase pain
-        yang.ultility_sum_.pain.add(yang.biomachine_.metaresources_secondary * yang.ultility_sum_.translator);
+        // yang.ultility_sum_.pain.add(yang.biomachine_.metaresources_secondary * yang.ultility_sum_.translator);
     }
 };
 /**
@@ -1282,15 +1269,6 @@ yang.node_.run_away
 yang.node_.bumpinto
 yang.node_.
 */
-/**
- * [angle_interval_of_bumping description]
- * @param  {Object} any collidable object
- * @return {Array}  angle interval
- */
-yang.fun_.angle_interval_of_bumping = function (object_entity) {
-    //calculate from verticies of the object
-    //return an interval in form of array
-}
 
 //////////////////////////
 //Inter-action Override //
@@ -1328,12 +1306,6 @@ yang.node_.feast_upon.action = function() {
         yang.mindmachine_.emptyness -= 50;
     }
     yang.memory_.colliding_obj.eat();//a function of food
-    // eliminate the food out of the list if it was there
-    yang.memory_.uneaten_food.filter(function(object) {return object != yang.memory_.colliding_obj;});
-    //switch to a new target if the target is eaten
-    if (yang.memory_.uneaten_food.length > 0) {
-        yang.node_.id_prime_focus.berry_game_obj_renew();
-    }    
 };
 /**
  * memorize food if not hungry
@@ -1353,36 +1325,6 @@ yang.node_.memorize_uneaten_food.action = function () {
     yang.text_.interactiveText += "I'm not hungry. ";//not a hungry comment
     yang.ultility_sum_.pleasure.add(yang.fun_.utility_value_calculate());  
 };
-/**
- * Say the Name
- * @memberOf yang.node_
- * @type {yang.fun_.def_node_construct}
- */
-yang.node_.recognization = new yang.fun_.def_node_construct("production_node");
-yang.node_.recognization.name = "Say the name";
-yang.node_.recognization.priority = Production.priority.Low;
-yang.node_.recognization.condition = function () {
-    return typeof yang.memory_.colliding_obj.name != "undefined" 
-    && !yang.containsMemory(yang.memory_.colliding_obj.name);
-};
-yang.node_.recognization.action = function () {
-    yang.text_.interactiveText += yang.memory_.colliding_obj.name + ". ";//unfriendly comment 
-    if ((yang.memory_.colliding_obj instanceof Entity) 
-        && yang.memory_.colliding_obj.isEdible == false) {
-        yang.addMemory("Bumped into " + yang.memory_.colliding_obj.name);
-    } else if (yang.memory_.colliding_obj instanceof Bot) {
-        yang.addMemory("FIRST Meet with" + yang.memory_.colliding_obj.name);
-    }
-};
-
-//////////////////////////////
-//Inter-reaction Production //
-//////////////////////////////
-
-//primary
-//
-//recency
-
 /**
  * memorize bot if friendly
  * @memberOf yang.node_
@@ -1437,6 +1379,29 @@ yang.node_.memorize_benefactor_bot.action = function () {
     yang.memory_.bene_bots.push(yang.memory_.colliding_obj);
     yang.text_.interactiveText += "Thanks. ";//unfriendly comment 
 };
+/**
+ * Say the Name
+ * @memberOf yang.node_
+ * @type {yang.fun_.def_node_construct}
+ */
+yang.node_.recognization = new yang.fun_.def_node_construct("production_node");
+yang.node_.recognization.name = "Say the name";
+yang.node_.recognization.priority = Production.priority.Low;
+yang.node_.recognization.condition = function () {
+    return typeof yang.memory_.colliding_obj.name != "undefined";
+};
+yang.node_.recognization.action = function () {
+    yang.text_.interactiveText += yang.memory_.colliding_obj.name + ". ";//unfriendly comment 
+};
+
+//////////////////////////////
+//Inter-reaction Production //
+//////////////////////////////
+
+//primary
+//
+//recency
+
 
 /////////////////////////////////////////////////////
 //TODO : RECycle   NBGMusic Production             //
