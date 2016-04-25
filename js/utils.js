@@ -232,7 +232,7 @@ function addFoodItem(image_id, description, calories) {
         return;
     }
     let location = findEmptyLocation();
-    addFood(image_id, location, description, calories);
+    addFood(image_id, description, calories, location);
 }
 
 
