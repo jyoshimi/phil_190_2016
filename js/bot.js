@@ -180,7 +180,7 @@ Bot.prototype.getRandom = function(floor, ceiling) {
  */
 Bot.prototype.incrementAngle = function(amount) {
     this.sprite.body.rotation += amount;
-    this.sprite.body.rotation = this.sprite.body.rotation % 180;
+    this.sprite.body.rotation = this.sprite.body.rotation % 360;
 }
 
 /**
