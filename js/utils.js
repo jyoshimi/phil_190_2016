@@ -82,6 +82,7 @@ DecayVariable.prototype.add = function(amount) {
         return;
     }
     this.value = Math.min(this.maxVal, this.value + amount);
+    this.value = Math.max(this.minVal, this.value);
 }
 DecayVariable.prototype.subtract = function(amount) {
     if (typeof amount == "undefined" || Number.isNaN(amount)) {
@@ -89,6 +90,7 @@ DecayVariable.prototype.subtract = function(amount) {
         return;
     }
     this.value = Math.max(this.minVal, this.value - amount);
+    this.value = Math.min(this.maxVal, this.value);
 }
 DecayVariable.prototype.getBar = function(prefix = "", showVal = false, numTicks = 10, minCharLengthOfMinMaxText = undefined) {
     var string_minVal = this.minVal.toString();
