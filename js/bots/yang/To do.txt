@@ -1,7 +1,3 @@
-1. speechbubblefiguer out
-2. BGM 5<Markov Chain> * 4<mental tasks> = 20 songs
-6. reactions filling
-7. convert audios
 8. add storage to tree house
 9. death and reset
 
@@ -108,7 +104,9 @@ Bot.prototype.antler_caressed = function(botWhocaresedMe, message) {
 };
 */
 
-
+yang.body.height/width
+yang.body.setSize(500, 500) // changwe colliding body size
+game.physics.arcade.angleToXY(jeff.sprite, jeff.sprite.x + 10, jeff.sprite.y + 5); = 1.10
 
 
 
