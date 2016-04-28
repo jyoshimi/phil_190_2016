@@ -83,16 +83,7 @@ yang.production_ = {};
  * @memberOf yang.production_
  */
 yang.production_.inter_action = [];
-/**
- * fire in reactions wrapup
- * @memberOf yang.production_
- */
 yang.production_.inter_reaction = [];
-/**
- * fire during Goal calculation
- * @memberOf yang.production_
- */
-yang.production_.goal_production = [];
 /**
  * fire in every reaction, because flag
  * @memberOf yang.production_
@@ -477,7 +468,6 @@ yang.fun_.distance_between_us = function (encounteredobject) {
  */
 yang.fun_.reactive_wrapup = function () {
     fireProductions(yang.production_.inter_reactivememorization);
-    fireProductions(yang.production_.inter_reaction);
     yang.collision_bene_flag = false;
     yang.collision_ouch_flag = false;
     yang.collision_nice_flag = false;
@@ -564,6 +554,7 @@ yang.fun_.audienceadd_BGM_antlerblessing = function (blessedbot) {
             yang);
     }
 };
+
 /**
  * BGM Path
  * @return {String} [path of file]
@@ -609,6 +600,7 @@ yang.collision_events = function(object) {//collision
         fireProductions(yang.test_.test_production);
     } else {
         fireProductions(yang.production_.inter_action);
+        fireProductions(yang.production_.inter_reaction);
     }
     //speak
     if (yang.text_.interactiveText != "")
@@ -632,57 +624,6 @@ yang.fun_.edible = function (fun_object) {
         || (fun_object.name.toLowerCase()).search("fruit") > 0);
 };
 /**
- * vector manipulator
- * @memberOf yang.fun_
- * @param  {Array} vector_a [description]
- * @param  {Array} vector_b [description]
- */
-yang.fun_.vector_add = function (vector_a, vector_b) {
-    return [vector_a[0] + vector_b[0], vector_a[1] + vector_b[1]];
-}
-yang.fun_.vector_subtract = function (vector_a, vector_b) {
-    return [vector_a[0] - vector_b[0], vector_a[1] - vector_b[1]];
-}
-yang.fun_.vector_multiply = function (vector_a, vector_b) {
-    return [vector_a[0] * vector_b[0], vector_a[1] * vector_b[1]];
-}
-/**
- * [angle_interval_of_bumping description]
- * @memberOf yang.fun_
- * @param  {Object} any collidable object
- * @return {Array}  angle interval
- */
-yang.fun_.angle_interval_of_bumping = function (object_entity) {
-    //calculate from verticies of the object
-    //the object should have a width, a length of colliding sprite body
-    var interval_of_angle_in_degree = [180, -180]; // [0] min, [1] max
-    var vertice_yang = [yang.body.x, yang.body.y]; 
-    var obj_centre = [object_entity.sprite.x, object_entity.sprite.y];
-    var obj_vertice_vector = [object_entity.sprite.width + yang.body.width,
-     object_entity.sprite.height + yang.body.height];
-    var directional_vector_set = [
-    [-1/2, 1/2],
-    [1/2, -1/2],
-    [-1/2, -1/2],
-    [1/2, 1/2]
-    ];
-    //find maxium and minum angle value
-    var update_interval_foreach = function (abstract_directional_vector) {
-        var real_directional_vector = yang.fun_.vector_multiply(abstract_directional_vector, obj_vertice_vector);
-        var vertex =  yang.fun_.vector_add(real_directional_vector, obj_centre);
-        var angle_in_degree = game.physics.arcade.angleToXY(yang.sprite, vertex[0], vertex[1]) * 180 / Math.PI;
-        if (angle_in_degree < interval_of_angle_in_degree[0]) {
-            interval_of_angle_in_degree[0] = angle_in_degree;
-        } 
-        if (angle_in_degree > interval_of_angle_in_degree[1]) {
-            interval_of_angle_in_degree[1] = angle_in_degree;
-        }
-    }
-    directional_vector_set.forEach(update_interval_foreach);
-    //return an interval in form of array
-    return interval_of_angle_in_degree;
-}
-/**
  * [findFood description]
  * @param  {Number} radius
  * @param  {Function} edibilityFunction
@@ -705,14 +646,6 @@ yang.findFood = function(radius = 200, edibilityFunction = yang.fun_.edible) {
  * @memberOf yang.fun_
  */
 yang.fun_.makeProductions = function() {
-    yang.production_.goal_production.push(
-        new Production(//example
-                yang.def_node.name,
-                yang.def_node.priority,
-                yang.def_node.condition,
-                yang.def_node.action
-        )
-    );
     yang.production_.inter_action.push(
         new Production(
                 yang.node_.feast_upon.name,
@@ -849,7 +782,7 @@ yang.highFived = function(botWhoHighFivedMe) {
     yang.biomachine_.metaresources_secondary += 10;
     yang.collision_nice_flag = true;
     yang.addMemory("highFived with" + botWhoHighFivedMe.name);
-    yang.ultility_sum_.pleasure.add(yang.fun_.collision_utility_value_calculate(10));
+    yang.ultility_sum_.pleasure.add(yang.fun_.utility_value_calculate(10));
     yang.fun_.reactive_wrapup();
 }
 /**
@@ -863,7 +796,7 @@ yang.gotBit = function(botWhoBitedMe, damage) {
     yang.biomachine_.metaresources_prime -= damage * 5;
     yang.collision_ouch_flag = true;
     yang.addMemory("biten by" + botWhoBitedMe.name);
-    yang.ultility_sum_.pain.add(yang.fun_.collision_utility_value_calculate(10));
+    yang.ultility_sum_.pain.add(yang.fun_.utility_value_calculate(10));
     yang.fun_.reactive_wrapup();
 };
 /**
@@ -890,7 +823,7 @@ yang.gotCrushed = function(botWhoCrushMe) {
     yang.biomachine_.metaresources_secondary -= 100;
     yang.collision_ouch_flag = true;
     yang.addMemory("crushed by" + botWhoCrushMe.name);
-    yang.ultility_sum_.pain.add(yang.fun_.collision_utility_value_calculate(200));
+    yang.ultility_sum_.pain.add(yang.fun_.utility_value_calculate(200));
     yang.fun_.reactive_wrapup();
 };
 /**
@@ -904,7 +837,7 @@ yang.gotBow = function(botWhoBowed) {
     yang.collision_bene_flag = true;
     yang.collision_nice_flag = true;
     yang.addMemory("bowed with" + botWhoBowed.name);
-    yang.ultility_sum_.pleasure.add(yang.fun_.collision_utility_value_calculate());
+    yang.ultility_sum_.pleasure.add(yang.fun_.utility_value_calculate());
     yang.fun_.reactive_wrapup();
 };
 /**
@@ -917,10 +850,10 @@ yang.gotLicked = function(botWhoLickedMe) {
     yang.chaosmachine_.chance = Math.random();
     if (yang.chaosmachine_.chance <= .50) {
         yang.collision_ouch_flag = true;
-        yang.ultility_sum_.pain.add(yang.fun_.collision_utility_value_calculate());
+        yang.ultility_sum_.pain.add(yang.fun_.utility_value_calculate());
     } else {
         yang.collision_nice_flag = true;
-        yang.ultility_sum_.pleasure.add(yang.fun_.collision_utility_value_calculate());
+        yang.ultility_sum_.pleasure.add(yang.fun_.utility_value_calculate());
     }
     yang.addMemory("licked by" + botWhoLickedMe.name);
     yang.fun_.reactive_wrapup();
@@ -935,10 +868,10 @@ yang.gotIgnored = function(botWhoIgnoredMe) {
     yang.chaosmachine_.chance = Math.random();
     if (yang.chaosmachine_.chance <= .50) {
         yang.collision_ouch_flag = true;
-        yang.ultility_sum_.pain.add(yang.fun_.collision_utility_value_calculate());
+        yang.ultility_sum_.pain.add(yang.fun_.utility_value_calculate());
     } else {
         yang.collision_nice_flag = true;
-        yang.ultility_sum_.pleasure.add(yang.fun_.collision_utility_value_calculate());
+        yang.ultility_sum_.pleasure.add(yang.fun_.utility_value_calculate());
     }
     yang.addMemory("ignored by" + botWhoIgnoredMe.name);
     yang.fun_.reactive_wrapup();
@@ -1341,7 +1274,9 @@ yang.node_.run_away
 yang.node_.bumpinto
 yang.node_.
 */
-//yang.getNearbyObjects(400);
+yang.fun_.closest_bump_verticies = function (object_entity) {
+    
+}
 
 //////////////////////////
 //Inter-action Override //
@@ -1373,7 +1308,7 @@ yang.node_.feast_upon.action = function() {
     } 
     yang.biomachine_.metaresources_prime += yang.memory_.colliding_obj.calories;
     //increase pleasure
-    yang.ultility_sum_.pleasure.add(yang.fun_.collision_utility_value_calculate(10));
+    yang.ultility_sum_.pleasure.add(yang.fun_.utility_value_calculate(10));
     if (yang.memory_.colliding_obj.name = "Philoberry") {
         yang.mindmachine_.inspiration += 50;
         yang.mindmachine_.emptyness -= 50;
@@ -1402,7 +1337,7 @@ yang.node_.memorize_uneaten_food.condition = function () {//I think problem is h
 yang.node_.memorize_uneaten_food.action = function () {
     yang.memory_.uneaten_food.push(yang.memory_.colliding_obj);
     yang.text_.interactiveText += "I'm not hungry. ";//not a hungry comment
-    yang.ultility_sum_.pleasure.add(yang.fun_.collision_utility_value_calculate());  
+    yang.ultility_sum_.pleasure.add(yang.fun_.utility_value_calculate());  
 };
 /**
  * Say the Name
@@ -1414,8 +1349,7 @@ yang.node_.recognization.name = "Say the name";
 yang.node_.recognization.priority = Production.priority.Low;
 yang.node_.recognization.condition = function () {
     return typeof yang.memory_.colliding_obj.name != "undefined" 
-    && !yang.containsMemory("FIRST Meet with " + yang.memory_.colliding_obj.name)
-    && !yang.containsMemory("Bumped into " + yang.memory_.colliding_obj.name);
+    && !yang.containsMemory(yang.memory_.colliding_obj.name);
 };
 yang.node_.recognization.action = function () {
     yang.text_.interactiveText += yang.memory_.colliding_obj.name + ". ";//unfriendly comment 
@@ -1423,7 +1357,7 @@ yang.node_.recognization.action = function () {
         && yang.memory_.colliding_obj.isEdible == false) {
         yang.addMemory("Bumped into " + yang.memory_.colliding_obj.name);
     } else if (yang.memory_.colliding_obj instanceof Bot) {
-        yang.addMemory("FIRST Meet with " + yang.memory_.colliding_obj.name);
+        yang.addMemory("FIRST Meet with" + yang.memory_.colliding_obj.name);
     }
 };
 
@@ -1533,7 +1467,7 @@ yang.tag_game_obj = function() {
  * called in collsion events after flags is up
  * @memberOf yang.fun_
  */
-yang.fun_.collision_utility_value_calculate = function (u_value = 0) {
+yang.fun_.utility_value_calculate = function (u_value = 0) {
     //u_value is always positive, but multiplier isn't
     var multiplier = 1;
     //simulate primary effect
