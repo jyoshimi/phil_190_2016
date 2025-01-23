@@ -107,6 +107,7 @@ this.productions = []; // The production array
             return (rey.emotions.current == "Hyper");
         },
         function() {
+            var nearbyBots = rey.getNearbyBots(800);
             rey.pursue(nearbyBots[0], 1000);
             rey.makeSpeechBubble("Play with me!!");
         });
