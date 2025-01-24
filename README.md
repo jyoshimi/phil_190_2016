@@ -2,7 +2,7 @@
 
 Code associated with a semester-long project for a small honors course offered in Spring 2016 at UC Merced, Phil 190, "Philosophy of Game Programming". It was an experimental course that was only offered that one semester, but it was a blast to teach and illustrates what I think is a promising idea.
 
-Each student was responsible for their own bot and had their own folder where they could add logic and graphics to their bot. Each week we added new functionality, like a "Freudian state machine". It was presented as being mostly unrealistic, but a good way to just learn various skills and ideas. 
+Each student was responsible for their own bot and had their own folder where they could add logic and graphics to their bot. Each week we added new functionality. It was presented as being mostly unrealistic, but a good way to just learn various skills and ideas. 
 
 Topics included 
 - "Freudian state machines"
